@@ -1,0 +1,23 @@
+{
+    "name": "supercharge/supercharge",
+    "require": {
+        "php": ">=7.1.0",
+        "illuminate/config": "~5.7.0|~5.8.0|^6.0",
+        "illuminate/support": "~5.7.0|~5.8.0|^6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Supercharge\\": "src/"
+        },
+        "files": [
+            "functions.php"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Supercharge\\ServiceProvider"
+            ]
+        }
+    }
+}
