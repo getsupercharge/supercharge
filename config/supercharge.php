@@ -26,6 +26,8 @@ return [
     | Supercharge will be temporarily bypassed and source images will be
     | used instead.
     |
+    | This can be useful to temporarily debug a website in production.
+    |
     */
 
     'bypass' => env('SUPERCHARGE_BYPASS', false),
