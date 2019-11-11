@@ -3,9 +3,9 @@
     "license": "MIT",
     "require": {
         "php": ">=7.1.0",
-        "illuminate/config": "~5.7.0|~5.8.0|^6.0",
-        "illuminate/support": "~5.7.0|~5.8.0|^6.0",
-        "phpunit/phpunit": "^7.0|^8.0"
+        "illuminate/config": "~5.6.0|~5.7.0|~5.8.0|^6.0",
+        "illuminate/support": "~5.6.0|~5.7.0|~5.8.0|^6.0",
+        "phpunit/phpunit": "^6.0|^7.0|^8.0"
     },
     "autoload": {
         "psr-4": {
