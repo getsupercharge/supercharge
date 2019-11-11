@@ -18,19 +18,34 @@ class SuperchargeUrl
 
     public function __toString(): string
     {
+        $queryString = '';
         if (! empty($this->options)) {
-            $queryString = '?' . http_build_query($this->options);
-        } else {
-            $queryString = '';
+            $queryString = http_build_query($this->options);
         }
 
         $baseUrl = config('supercharge.url');
 
-        if (! $baseUrl) {
-            return $this->imagePath . $queryString;
+        $imageUrlComponents = parse_url($this->imagePath);
+        $imagePath = $imageUrlComponents['path'] ?? '';
+
+        $existingQueryString = $imageUrlComponents['query'] ?? null;
+        if ($existingQueryString) {
+            if ($queryString) {
+                $queryString .= '&' . $existingQueryString;
+            } else {
+                $queryString = $existingQueryString;
+            }
         }
 
-        return $baseUrl . '/' . ltrim($this->imagePath, '/') . $queryString;
+        if ($queryString) {
+            $queryString = '?' . $queryString;
+        }
+
+        if (! $baseUrl) {
+            return $imagePath . $queryString;
+        }
+
+        return $baseUrl . '/' . ltrim($imagePath, '/') . $queryString;
     }
 
     /**

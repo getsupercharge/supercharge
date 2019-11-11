@@ -83,4 +83,14 @@ class SuperchargeUrlTest extends TestCase
             ->pixelRatio(2);
         $this->assertEquals('/foo/bar.jpg?dpr=2', (string) $url);
     }
+
+    public function testSupportsExistingQueryString(): void
+    {
+        $url = supercharge('/foo/bar.jpg?foo=bar');
+        $this->assertEquals('/foo/bar.jpg?foo=bar', (string) $url);
+
+        $url = supercharge('/foo/bar.jpg?foo=bar')
+            ->width(200);
+        $this->assertEquals('/foo/bar.jpg?w=200&foo=bar', (string) $url);
+    }
 }
