@@ -21,10 +21,11 @@ class Api
      */
     public function __construct()
     {
-        $this->token = (new TokenStorage)->load();
-        if (! $this->token) {
+        $token = (new TokenStorage)->load();
+        if (! $token) {
             throw new RuntimeException('No token found. Please run "supercharge login" first.');
         }
+        $this->token = $token;
 
         $this->client = new Client([
             'base_uri' => $_SERVER['API_BASE_URL'],
