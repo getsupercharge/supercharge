@@ -1,30 +1,25 @@
 {
     "name": "supercharge/supercharge",
-    "license": "MIT",
-    "require": {
-        "php": ">=7.2.0",
-        "illuminate/config": "~5.7.0|~5.8.0|^6.0",
-        "illuminate/support": "~5.7.0|~5.8.0|^6.0",
-        "phpunit/phpunit": "^8.0"
-    },
+    "type": "project",
+    "license": "proprietary",
+    "bin": ["supercharge"],
     "autoload": {
         "psr-4": {
-            "Supercharge\\": "src/"
-        },
-        "files": [
-            "functions.php"
-        ]
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Supercharge\\Test\\": "tests/"
+            "Supercharge\\Cli\\": "src/"
         }
     },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "Supercharge\\ServiceProvider"
-            ]
-        }
+    "require": {
+        "php": ">=8.0",
+        "guzzlehttp/guzzle": "^7",
+        "laravel/prompts": "^0.1.15",
+        "nunomaduro/termwind": "^2.0",
+        "ratchet/pawl": "^0.4.1",
+        "symfony/console": "^6|^7",
+        "symfony/filesystem": "^6|^7",
+        "symfony/process": "^6|^7",
+        "symfony/yaml": "^6|^7"
+    },
+    "config": {
+        "sort-packages": true
     }
 }

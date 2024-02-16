@@ -1,0 +1,16 @@
+#!/usr/bin/env php
+<?php
+
+use Supercharge\Cli\Commands\LoginCommand;
+use Supercharge\Cli\Commands\PhpUnitCommand;
+use Symfony\Component\Console\Application;
+
+$autoloader = require file_exists(__DIR__.'/vendor/autoload.php') ?  __DIR__.'/vendor/autoload.php' : __DIR__.'/../../autoload.php';
+
+$_SERVER['API_BASE_URL'] = 'https://getsupercharge.com';
+
+$application = new Application();
+$application->add(new LoginCommand);
+$application->add(new PhpUnitCommand);
+
+exit($application->run());
