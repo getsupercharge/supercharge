@@ -12,7 +12,7 @@
         "php": ">=8.0",
         "guzzlehttp/guzzle": "^7",
         "laravel/prompts": "^0.1.15",
-        "nunomaduro/termwind": "^2.0",
+        "nunomaduro/termwind": "^1.5|^2",
         "ratchet/pawl": "^0.4.1",
         "symfony/console": "^6|^7",
         "symfony/filesystem": "^6|^7",
