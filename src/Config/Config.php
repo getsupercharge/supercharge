@@ -21,10 +21,12 @@ class Config
     /**
      * @param string[] $beforeCommands
      * @param string[] $ignorePaths
+     * @param string[] $environment
      */
     public function __construct(
         public array $beforeCommands = [],
         public array $ignorePaths = [],
+        public array $environment = [],
     )
     {
     }

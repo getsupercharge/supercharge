@@ -65,6 +65,7 @@ class Runner
                 'commands' => $commands,
                 'directory' => $directory,
                 'beforeCommands' => $this->config->beforeCommands,
+                'environmentVariables' => $this->config->environment,
                 'packageHash' => $hash,
             ]);
         } catch (Throwable $e) {
