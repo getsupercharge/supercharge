@@ -56,9 +56,10 @@ class Runner
         // to avoid missing any events. However we don't have the run ID before we start the jobs.
         $this->api->connectWebsocket("run.$runId", function ($payload, $connection) use (&$jobRetrieved, &$jobCount, $junitReport, $progress) {
             $messagePayload = json_decode((string) $payload, true, 512, JSON_THROW_ON_ERROR);
-            $status = $messagePayload['status'];
-            if (($status === 'success' || $status === 'failure') && $messagePayload['junitXmlReport']) {
-                $junitReport->merge($messagePayload['junitXmlReport']);
+            $event = $messagePayload['event'] ?? null;
+            $data = $messagePayload['data'] ?? null;
+            if ($event === 'job.finished' && is_array($data) && $data['junitXmlReport']) {
+                $junitReport->merge($data['junitXmlReport']);
                 $progress->advance();
                 $jobRetrieved++;
             }
