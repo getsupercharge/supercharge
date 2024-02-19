@@ -11,6 +11,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\spin;
 use function Termwind\render;
@@ -22,6 +23,7 @@ class PhpUnitCommand extends Command
         $this
             ->setName('phpunit')
             ->setDescription('Run PHPUnit tests')
+            ->addOption('project', null, InputOption::VALUE_REQUIRED, 'Supercharge project name')
             ->addOption('directory', null, InputOption::VALUE_REQUIRED, 'Directory from which to run the PHPUnit tests')
             ->addOption('binary', null, InputOption::VALUE_REQUIRED, 'Override the PHPUnit binary path')
             ->addOption('configuration', 'c', InputOption::VALUE_REQUIRED, 'Read configuration from XML file')
@@ -46,6 +48,11 @@ class PhpUnitCommand extends Command
         }
 
         $config = Config::read();
+
+        $project = $input->getOption('project') ?: $config->project;
+        if ($project === null) {
+            throw new RuntimeException('Project name is required, either as a CLI option or in the supercharge.yml file');
+        }
 
         $hash = $input->getOption('hash');
 
@@ -80,14 +87,14 @@ class PhpUnitCommand extends Command
         }
 
         if (empty($allTests)) {
-            \Laravel\Prompts\error('No tests found, exiting');
+            error('No tests found, exiting');
             return 1;
         }
 
         $commands = $phpunit->prepareListOfCommands($allTests);
 
         $runner = new Runner($config);
-        $report = $runner->runTests($hash, $commands, $directory);
+        $report = $runner->runTests($project, $hash, $commands, $directory);
 
         // log to file
         file_put_contents('junit.xml', $report->dump());

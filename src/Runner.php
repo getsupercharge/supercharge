@@ -17,7 +17,7 @@ class Runner
     private Api $api;
 
     public function __construct(
-        private readonly Config $config,
+        private Config $config,
     )
     {
         $this->api = new Api;
@@ -30,7 +30,7 @@ class Runner
      * @throws GuzzleException
      * @throws InvalidXml
      */
-    public function runTests(string $hash, array $commands, string $directory): JUnitReport
+    public function runTests(string $project, string $hash, array $commands, string $directory): JUnitReport
     {
         $jobCount = 9999999;
 
@@ -62,6 +62,7 @@ class Runner
 
         try {
             ['body' => $body] = $this->api->post('/api/runs', [
+                'project' => $project,
                 'commands' => $commands,
                 'directory' => $directory,
                 'beforeCommands' => $this->config->beforeCommands,
