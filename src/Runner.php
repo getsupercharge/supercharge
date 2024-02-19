@@ -29,9 +29,10 @@ class Runner
      * @throws GuzzleException
      * @throws InvalidXml
      */
-    public function runTests(string $hash, array $commands, string $directory): JUnitReport
+    public function runTests(string $project, string $hash, array $commands, string $directory): JUnitReport
     {
         ['body' => $body] = $this->api->post('/api/runs', [
+            'project' => $project,
             'commands' => $commands,
             'directory' => $directory,
             'beforeCommands' => $this->config->beforeCommands,
@@ -66,6 +67,10 @@ class Runner
                 // Break out of the loop
                 $connection->close();
             }
+        }, function ($e) use ($progress, $loop) {
+            $loop->stop();
+            $progress->finish();
+            throw $e;
         });
 
         $loop->run();

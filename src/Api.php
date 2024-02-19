@@ -73,7 +73,7 @@ class Api
         ];
     }
 
-    public function connectWebsocket(string $channel, Closure $onMessage): void
+    public function connectWebsocket(string $channel, Closure $onMessage, Closure $onError): void
     {
         connect('wss://lbwjh1c2pe.execute-api.us-east-1.amazonaws.com/prod', headers: [
             'Authorization' => 'Bearer ' . $this->token,
@@ -88,9 +88,7 @@ class Api
                     'channels' => [$channel],
                 ], JSON_THROW_ON_ERROR));
             },
-            function ($e) {
-                throw new RuntimeException('Could not connect via WebSocket: ' . $e->getMessage());
-            },
+            $onError,
         );
     }
 }

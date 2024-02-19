@@ -24,6 +24,7 @@ class Config
      * @param string[] $environment
      */
     public function __construct(
+        public ?string $project = null,
         public array $beforeCommands = [],
         public array $ignorePaths = [],
         public array $environment = [],
