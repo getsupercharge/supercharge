@@ -58,6 +58,10 @@ class Runner
                 // Break out of the loop
                 $connection->close();
             }
+        }, function ($e) use ($progress, $loop) {
+            $loop->stop();
+            $progress->finish();
+            throw $e;
         });
 
         try {
