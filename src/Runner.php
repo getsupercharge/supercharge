@@ -9,7 +9,6 @@ use React\EventLoop\LoopInterface;
 use Supercharge\Cli\Config\Config;
 use Supercharge\Cli\Report\InvalidXml;
 use Supercharge\Cli\Report\JUnitReport;
-use Throwable;
 use function Laravel\Prompts\progress;
 
 class Runner
@@ -17,7 +16,7 @@ class Runner
     private Api $api;
 
     public function __construct(
-        private readonly Config $config,
+        private Config $config,
     )
     {
         $this->api = new Api;
@@ -32,7 +31,15 @@ class Runner
      */
     public function runTests(string $hash, array $commands, string $directory): JUnitReport
     {
-        $jobCount = 9999999;
+        ['body' => $body] = $this->api->post('/api/runs', [
+            'commands' => $commands,
+            'directory' => $directory,
+            'beforeCommands' => $this->config->beforeCommands,
+            'environmentVariables' => $this->config->environment,
+            'packageHash' => $hash,
+        ]);
+        $runId = $body['id'];
+        $jobCount = $body['jobCount'];
 
         $progress = progress(label: 'Running tests', steps: $jobCount);
         $progress->start();
@@ -44,8 +51,9 @@ class Runner
 
         $jobRetrieved = 0;
 
-        // Connect to the websocket API *before* starting the jobs, else we miss some events
-        $this->api->connectWebsocket(function ($payload, $connection) use (&$jobRetrieved, &$jobCount, $junitReport, $progress) {
+        // Ideally we should connect to the websocket API *before* starting the jobs,
+        // to avoid missing any events. However we don't have the run ID before we start the jobs.
+        $this->api->connectWebsocket("run.$runId", function ($payload, $connection) use (&$jobRetrieved, &$jobCount, $junitReport, $progress) {
             $messagePayload = json_decode((string) $payload, true, 512, JSON_THROW_ON_ERROR);
             $status = $messagePayload['status'];
             if (($status === 'success' || $status === 'failure') && $messagePayload['junitXmlReport']) {
@@ -59,23 +67,6 @@ class Runner
                 $connection->close();
             }
         });
-
-        try {
-            ['body' => $body] = $this->api->post('/api/runs', [
-                'commands' => $commands,
-                'directory' => $directory,
-                'beforeCommands' => $this->config->beforeCommands,
-                'environmentVariables' => $this->config->environment,
-                'packageHash' => $hash,
-            ]);
-        } catch (Throwable $e) {
-            $loop->stop();
-            $progress->finish();
-            throw $e;
-        }
-        $jobCount = $body['jobCount'];
-        $progress->steps = $jobCount;
-        $progress->total = $jobCount;
 
         $loop->run();
 
