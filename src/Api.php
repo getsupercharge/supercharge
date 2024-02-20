@@ -7,6 +7,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
 use Psr\Http\Message\ResponseInterface;
+use Ratchet\Client\WebSocket;
 use RuntimeException;
 use Supercharge\Cli\Config\TokenStorage;
 use function Ratchet\Client\connect;
@@ -78,7 +79,7 @@ class Api
         connect('wss://lbwjh1c2pe.execute-api.us-east-1.amazonaws.com/prod', headers: [
             'Authorization' => 'Bearer ' . $this->token,
         ])->then(
-            function ($connection) use ($channel, $onMessage) {
+            function (WebSocket $connection) use ($channel, $onMessage) {
                 $connection->on('message', function ($payload) use ($connection, $onMessage) {
                     $onMessage($payload, $connection);
                 });

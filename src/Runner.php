@@ -4,11 +4,13 @@ namespace Supercharge\Cli;
 
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
+use Ratchet\Client\WebSocket;
 use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
 use Supercharge\Cli\Config\Config;
 use Supercharge\Cli\Report\InvalidXml;
 use Supercharge\Cli\Report\JUnitReport;
+use function Laravel\Prompts\error;
 use function Laravel\Prompts\progress;
 
 class Runner
@@ -54,7 +56,7 @@ class Runner
 
         // Ideally we should connect to the websocket API *before* starting the jobs,
         // to avoid missing any events. However we don't have the run ID before we start the jobs.
-        $this->api->connectWebsocket("run.$runId", function ($payload, $connection) use (&$jobRetrieved, &$jobCount, $junitReport, $progress) {
+        $this->api->connectWebsocket("run.$runId", function ($payload, WebSocket $connection) use (&$jobRetrieved, &$jobCount, $junitReport, $progress) {
             $messagePayload = json_decode((string) $payload, true, 512, JSON_THROW_ON_ERROR);
             $event = $messagePayload['event'] ?? null;
             $data = $messagePayload['data'] ?? null;
@@ -71,7 +73,8 @@ class Runner
         }, function ($e) use ($progress, $loop) {
             $loop->stop();
             $progress->finish();
-            throw $e;
+            error('Failed to connect to the websocket API: ' . $e->getMessage());
+            exit(1);
         });
 
         $loop->run();
