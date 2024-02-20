@@ -60,7 +60,7 @@ class Runner
 
         // Ideally we should connect to the websocket API *before* starting the jobs,
         // to avoid missing any events. However we don't have the run ID before we start the jobs.
-        $this->api->connectWebsocket("run.$runId", function ($payload, WebSocket $connection) use (&$jobRetrieved, &$jobCount, $junitReport, $progress) {
+        $this->api->connectWebsocket("runs.$runId", function ($payload, WebSocket $connection) use (&$jobRetrieved, &$jobCount, $junitReport, $progress) {
             $messagePayload = json_decode((string) $payload, true, 512, JSON_THROW_ON_ERROR);
             if (! is_array($messagePayload)) return;
             $event = $messagePayload['event'] ?? null;
