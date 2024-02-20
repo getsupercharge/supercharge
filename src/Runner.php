@@ -64,9 +64,9 @@ class Runner
             $messagePayload = json_decode((string) $payload, true, 512, JSON_THROW_ON_ERROR);
             if (! is_array($messagePayload)) return;
             $event = $messagePayload['event'] ?? null;
-            $data = $messagePayload['data'] ?? null;
-            if ($event === 'App\\Events\\JobCompletedEvent' && is_array($data) && $data['junitXmlReport']) {
-                $junitReport->merge($data['junitXmlReport']);
+            $job = $messagePayload['data']['job'] ?? null;
+            if ($event === 'App\\Events\\JobCompletedEvent' && is_array($job) && $job['junitXmlReport']) {
+                $junitReport->merge($job['junitXmlReport']);
                 $progress->advance();
                 $jobRetrieved++;
             }
