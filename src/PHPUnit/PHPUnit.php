@@ -10,12 +10,15 @@ use function Laravel\Prompts\info;
 
 class PHPUnit
 {
-    private readonly string $binary;
+    private string $binary;
 
+    /**
+     * @param string[] $phpUnitOptions
+     */
     public function __construct(
-        private readonly string $directory = '.',
+        private string $directory = '.',
         ?string $binary = 'vendor/bin/phpunit',
-        private readonly array $phpUnitOptions = [],
+        private array $phpUnitOptions = [],
     )
     {
         $this->binary = $binary ?: 'vendor/bin/phpunit';
@@ -36,6 +39,10 @@ class PHPUnit
         $allTests = [];
 
         $tmpFile = tempnam(sys_get_temp_dir(), 'supercharge');
+        if ($tmpFile === false) {
+            throw new RuntimeException('Could not create a temporary file');
+        }
+
         $process = new Process([
             $this->binary,
             ...$this->phpUnitOptions,
@@ -46,6 +53,9 @@ class PHPUnit
 
         // Read the XML file
         $xmlContent = file_get_contents($tmpFile);
+        if ($xmlContent === false) {
+            throw new RuntimeException('Could not read PHPUnit XML output from file ' . $tmpFile);
+        }
         try {
             $xml = new SimpleXMLElement($xmlContent);
         } catch (Exception $e) {
@@ -76,7 +86,9 @@ class PHPUnit
      */
     public function prepareListOfCommands(array $allTests, int $numberOfChunks = 30): array
     {
-        $chunks = array_chunk($allTests, (int) ceil(count($allTests) / $numberOfChunks));
+        $chunkLength = (int) ceil(count($allTests) / $numberOfChunks);
+        $chunkLength = max(1, $chunkLength); // At least one test in each chunk
+        $chunks = array_chunk($allTests, $chunkLength);
 
         $testsPerChunk = count($chunks[0]);
         info("$testsPerChunk tests in each instance");

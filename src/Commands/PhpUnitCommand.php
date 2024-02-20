@@ -42,18 +42,20 @@ class PhpUnitCommand extends Command
             </div>
         HTML);
 
+        /** @var string $directory */
         $directory = $input->getOption('directory') ?: '.';
-        if (! is_dir($directory)) {
+        if (! is_dir($directory) || ! is_readable($directory)) {
             throw new RuntimeException("Directory $directory does not exist");
         }
 
         $config = Config::read();
 
         $project = $input->getOption('project') ?: $config->project;
-        if ($project === null) {
+        if (! is_string($project) || $project === '') {
             throw new RuntimeException('Project name is required, either as a CLI option or in the supercharge.yml file');
         }
 
+        /** @var string|null $hash */
         $hash = $input->getOption('hash');
 
         // Zip the code
@@ -61,16 +63,23 @@ class PhpUnitCommand extends Command
         $hash = $package->upload($config, $hash);
 
         // For testing we can limit the number of tests
+        // @phpstan-ignore-next-line
         $maxTests = (int) $input->getOption('max-tests');
 
         // PHPUnit options
+        /** @var string[] $phpUnitOptions */
         $phpUnitOptions = [];
         if ($input->getOption('configuration') !== null) {
             $phpUnitOptions[] = '--configuration';
-            $phpUnitOptions[] = $input->getOption('configuration');
+            /** @var string $configurationOption */
+            $configurationOption = $input->getOption('configuration');
+            $phpUnitOptions[] = $configurationOption;
         }
 
-        $phpunit = new PHPUnit($directory, binary: $input->getOption('binary'), phpUnitOptions: $phpUnitOptions);
+        /** @var string|null $binary */
+        $binary = $input->getOption('binary');
+
+        $phpunit = new PHPUnit($directory, binary: $binary, phpUnitOptions: $phpUnitOptions);
         $phpunit->checkIsInstalled();
 
         $allTests = spin(

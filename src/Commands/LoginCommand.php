@@ -38,6 +38,8 @@ class LoginCommand extends Command
             info('Please log in, create a CLI token, then paste it below.');
 
             $token = password('Supercharge CLI token');
+        } elseif (! is_string($token)) {
+            throw new RuntimeException('The token must be a string');
         }
 
         $tokenStorage = new TokenStorage;

@@ -41,6 +41,9 @@ class Package
         $this->createZip($config);
 
         $hash = $hash ?: sha1_file(self::FILENAME);
+        if ($hash === false) {
+            throw new RuntimeException('Failed to hash the zip file');
+        }
 
         // Upload to S3
         $start = microtime(true);
@@ -67,6 +70,9 @@ class Package
         if ($response->getStatusCode() === 304) {
             info('Code already uploaded');
             return;
+        }
+        if (! is_array($body) || ! isset($body['url'], $body['headers'])) {
+            throw new RuntimeException('Invalid response from the API');
         }
         $url = $body['url'];
         $headers = $body['headers'];

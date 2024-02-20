@@ -7,6 +7,7 @@ use JsonException;
 use Ratchet\Client\WebSocket;
 use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
+use RuntimeException;
 use Supercharge\Cli\Config\Config;
 use Supercharge\Cli\Report\InvalidXml;
 use Supercharge\Cli\Report\JUnitReport;
@@ -41,10 +42,13 @@ class Runner
             'environmentVariables' => $this->config->environment,
             'packageHash' => $hash,
         ]);
+        if (! is_array($body) || ! isset($body['id'], $body['jobCount'])) {
+            throw new RuntimeException('Invalid response from the API');
+        }
         $runId = $body['id'];
-        $jobCount = $body['jobCount'];
+        $jobCount = (int) $body['jobCount'];
 
-        $progress = progress(label: 'Running tests', steps: $jobCount);
+        $progress = progress('Running tests', $jobCount);
         $progress->start();
 
         $junitReport = new JUnitReport;
@@ -58,9 +62,10 @@ class Runner
         // to avoid missing any events. However we don't have the run ID before we start the jobs.
         $this->api->connectWebsocket("run.$runId", function ($payload, WebSocket $connection) use (&$jobRetrieved, &$jobCount, $junitReport, $progress) {
             $messagePayload = json_decode((string) $payload, true, 512, JSON_THROW_ON_ERROR);
+            if (! is_array($messagePayload)) return;
             $event = $messagePayload['event'] ?? null;
             $data = $messagePayload['data'] ?? null;
-            if ($event === 'job.finished' && is_array($data) && $data['junitXmlReport']) {
+            if ($event === 'App\\Events\\JobCompletedEvent' && is_array($data) && $data['junitXmlReport']) {
                 $junitReport->merge($data['junitXmlReport']);
                 $progress->advance();
                 $jobRetrieved++;

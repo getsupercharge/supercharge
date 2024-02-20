@@ -3,6 +3,7 @@
 namespace Supercharge\Cli\Report;
 
 use DOMDocument;
+use DOMElement;
 use function Termwind\render;
 
 class JUnitReport
@@ -23,8 +24,8 @@ class JUnitReport
         if (! $success) {
             throw new InvalidXml("Could not load invalid XML: \n$xml");
         }
-        foreach ($xmlData->documentElement->childNodes as $testsuite) {
-            $this->xmlData->documentElement->appendChild(
+        foreach (($xmlData->documentElement?->childNodes ?: []) as $testsuite) {
+            $this->xmlData->documentElement?->appendChild(
                 $this->xmlData->importNode($testsuite, true),
             );
         }
@@ -32,8 +33,8 @@ class JUnitReport
 
     public function mergeReport(JUnitReport $report): void
     {
-        foreach ($report->xmlData->documentElement->childNodes as $testsuite) {
-            $this->xmlData->documentElement->appendChild(
+        foreach (($report->xmlData->documentElement?->childNodes ?: []) as $testsuite) {
+            $this->xmlData->documentElement?->appendChild(
                 $this->xmlData->importNode($testsuite, true),
             );
         }
@@ -74,7 +75,11 @@ class JUnitReport
 
     public function dump(): string
     {
-        return $this->xmlData->saveXML();
+        $xml = $this->xmlData->saveXML();
+        if ($xml === false) {
+            throw new InvalidXml('Could not dump the XML for the JUnit report');
+        }
+        return $xml;
     }
 
     public function display(): void
@@ -131,7 +136,7 @@ class JUnitReport
     /**
      * Number of tests that ran successfully
      *
-     * @return array{total: int, success: int, failure: int, error: int}
+     * @return array{total: int, success: int, failure: int, error: int, skipped: int, assertions: int, totalTime: float}
      */
     public function getResults(): array
     {
@@ -174,11 +179,13 @@ class JUnitReport
     {
         $failures = [];
         foreach ($this->xmlData->getElementsByTagName('failure') as $failure) {
+            if (! $failure->parentNode instanceof DOMElement) continue;
             $testName = $failure->parentNode->getAttribute('name');
             $message = $failure->getAttribute('message') ?: $failure->textContent;
             $failures[] = new TestFailure($testName, $message);
         }
         foreach ($this->xmlData->getElementsByTagName('error') as $error) {
+            if (! $error->parentNode instanceof DOMElement) continue;
             $testName = $error->parentNode->getAttribute('name');
             $message = $error->getAttribute('message') ?: $error->textContent;
             $failures[] = new TestFailure($testName, $message);

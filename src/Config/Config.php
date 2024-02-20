@@ -2,6 +2,7 @@
 
 namespace Supercharge\Cli\Config;
 
+use RuntimeException;
 use Symfony\Component\Yaml\Yaml;
 
 class Config
@@ -13,7 +14,14 @@ class Config
             return new self;
         }
 
-        $config = Yaml::parse(file_get_contents($file));
+        $yaml = file_get_contents($file);
+        if ($yaml === false) {
+            throw new RuntimeException('Failed to read supercharge.yml');
+        }
+        $config = Yaml::parse($yaml);
+        if (! is_array($config)) {
+            throw new RuntimeException('Invalid config in supercharge.yml');
+        }
 
         return new self(...$config);
     }

@@ -38,7 +38,7 @@ class Api
     }
 
     /**
-     * @return array{response: ResponseInterface, body: array}
+     * @return array{response: ResponseInterface, body: mixed}
      * @throws GuzzleException
      * @throws JsonException
      */
@@ -54,7 +54,8 @@ class Api
     }
 
     /**
-     * @return array{response: ResponseInterface, body: array}
+     * @param array<mixed> $data
+     * @return array{response: ResponseInterface, body: mixed}
      * @throws GuzzleException
      * @throws JsonException
      */

@@ -3,6 +3,7 @@
 namespace Supercharge\Cli\Config;
 
 use JsonException;
+use RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 
 class TokenStorage
@@ -44,7 +45,14 @@ class TokenStorage
             return null;
         }
 
-        $config = json_decode(file_get_contents($this->path), true, 512, JSON_THROW_ON_ERROR);
+        $json = file_get_contents($this->path);
+        if ($json === false) {
+            throw new RuntimeException("There is a Supercharge configuration file at $this->path but it couldn't be read");
+        }
+        $config = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        if (! is_array($config) || ! isset($config['token']) || ! is_string($config['token'])) {
+            throw new RuntimeException("The Supercharge configuration file at $this->path is invalid");
+        }
         return $config['token'];
     }
 }
